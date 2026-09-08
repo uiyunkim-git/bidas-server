@@ -1,0 +1,83 @@
+name: ${COMPOSE_PROJECT_NAME:-bidas}
+
+services:
+  # ── Object storage ────────────────────────────────────────────────
+  minio:
+    image: ${MINIO_IMAGE:-minio/minio:latest}
+    container_name: bidas-minio
+    restart: unless-stopped
+    command: server /data --address ":9000" --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_REGION: ${MINIO_REGION:-us-east-1}
+      # Console lives behind the proxy at PUBLIC_URL/minio/
+      MINIO_BROWSER_REDIRECT_URL: ${MINIO_CONSOLE_URL:-${PUBLIC_URL}/minio}
+      # Allow the BIDAS site (and anything your proxy fronts) to call the S3 API.
+      MINIO_API_CORS_ALLOW_ORIGIN: ${PUBLIC_URL},http://localhost:${BIDAS_HTTP_PORT}
+    volumes:
+      - ./data/minio:/data
+    networks: [bidas]
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+    logging: &logging
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  # ── One-shot bootstrap: buckets, policies, users, seed data ───────
+  minio-init:
+    image: ${MINIO_IMAGE:-minio/minio:latest}
+    container_name: bidas-minio-init
+    restart: "no"
+    depends_on:
+      minio: { condition: service_healthy }
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_REGION: ${MINIO_REGION:-us-east-1}
+      PUBLIC_URL: ${PUBLIC_URL}
+      BIDAS_S3_PORT: ${BIDAS_S3_PORT}
+      BIDAS_BUCKETS: ${BIDAS_BUCKETS}
+      BIDAS_PUBLIC_BUCKETS: ${BIDAS_PUBLIC_BUCKETS}
+      BIDAS_SEED_ON_START: ${BIDAS_SEED_ON_START:-false}
+      BIDAS_READONLY_USER: ${BIDAS_READONLY_USER}
+      BIDAS_READONLY_PASSWORD: ${BIDAS_READONLY_PASSWORD}
+      BIDAS_UPLOAD_USER: ${BIDAS_UPLOAD_USER:-}
+      BIDAS_UPLOAD_PASSWORD: ${BIDAS_UPLOAD_PASSWORD:-}
+    entrypoint: ["/bin/sh", "/init/init.sh"]
+    volumes:
+      - ./minio/init.sh:/init/init.sh:ro
+      - ./seed:/seed:ro
+      - ./overlay:/overlay          # init writes overlay/minio.json (read-write)
+    networks: [bidas]
+    logging: *logging
+
+  # ── Front door: static site + embedded browser + S3/console proxy ─
+  proxy:
+    build:
+      context: ./proxy
+    image: bidas-proxy:local
+    container_name: bidas-proxy
+    restart: unless-stopped
+    depends_on: [minio]
+    environment:
+      BIDAS_BUCKETS: ${BIDAS_BUCKETS}
+      MAX_UPLOAD_SIZE: ${MAX_UPLOAD_SIZE:-0}
+    ports:
+      # Web site, embedded data browser, MinIO console, direct object URLs
+      - "${BIDAS_HTTP_PORT}:80"
+      # Raw S3 API root, for mc / aws-cli / boto3
+      - "${BIDAS_S3_PORT}:9000"
+    volumes:
+      - ./web:/srv/web:ro
+      - ./overlay:/srv/overlay:ro
+    networks: [bidas]
+    logging: *logging
+
+networks:
+  bidas:
+    driver: bridge

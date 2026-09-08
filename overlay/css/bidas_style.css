@@ -1,0 +1,456 @@
+/* ==========================================================================
+   BIDAS — SMRI NGS Data Repository
+   Overlay stylesheet. Shadows web/css/bidas_style.css, which every page
+   already links to, so the site is restyled without editing any page.
+
+   Deliberately conservative: this keeps the upstream layout — inline-block
+   header, Bootstrap grid body — and changes colour, type and spacing on top
+   of it. Content is never given a narrower measure than its container; text,
+   tables and code all run the full width of the content area.
+
+   To revert entirely: delete this file. The proxy then falls through to the
+   upstream stylesheet and the site looks exactly as it did before.
+   ========================================================================== */
+
+:root {
+    --ink:          #1a2430;
+    --ink-soft:     #47535f;
+    --ink-faint:    #79838e;
+
+    --brand:        #1c3f6e;
+    --brand-bright: #2f6db5;
+    --brand-pale:   #eaf0f7;
+    --brand-line:   #c2cedf;   /* the original site accent, kept */
+
+    --surface:      #ffffff;
+    --surface-sunk: #f6f8fb;
+    --page:         #eef1f5;
+    --line:         #dfe4ea;
+
+    --ok:           #1f7a4d;
+    --warn:         #8a5a00;
+    --danger:       #a32b2b;
+
+    --radius:       6px;
+    --shadow:       0 1px 2px rgba(26, 36, 48, .06), 0 2px 8px rgba(26, 36, 48, .05);
+}
+
+/* ── base ───────────────────────────────────────────────────────────────── */
+
+body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Pretendard,
+                 "Noto Sans KR", "Apple SD Gothic Neo", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--brand-bright); }
+a:hover { color: var(--brand); }
+
+img { max-width: 100%; }
+
+/* ── header ─────────────────────────────────────────────────────────────── */
+/* Upstream lays this out with inline-blocks; left alone, only restyled. */
+
+.header-row {
+    background: var(--brand);
+    height: auto;
+    box-shadow: var(--shadow);
+}
+
+.col-md-12 {
+    height: 100%;
+    padding: 0;
+    vertical-align: middle;
+}
+
+.header_text {
+    font-size: 20px;
+    line-height: 1.3;
+    color: #fff;
+    padding: 14px 22px;
+}
+
+.logo_box {
+    height: 58px;
+    width: 58px;
+    vertical-align: middle;
+    display: inline-block;
+    margin: 0;
+}
+.logo_box img {
+    background: #fff;
+    border-radius: 5px;
+    padding: 4px;
+}
+
+.header_text_box {
+    height: 100%;
+    vertical-align: middle;
+    display: inline-block;
+    margin: 0 0 0 16px;
+    letter-spacing: -.01em;
+}
+
+/* ── body frame ─────────────────────────────────────────────────────────── */
+
+.body-margin {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+    gap: 24px;
+    margin: 22px auto;
+    padding: 0 24px;
+}
+
+/* ── sidebar ────────────────────────────────────────────────────────────── */
+/* A fixed width, so labels never wrap however narrow the viewport gets. */
+
+#menu,
+#menu.col-sm-2 {
+    flex: 0 0 228px;
+    width: 228px;
+    max-width: 228px;
+    margin: 0;
+    padding: 0;
+    display: block;
+}
+
+.menu_texts { font-size: 15px; font-weight: 500; }
+
+#menu > .row,
+#menu .bidas-access > .row { margin: 0; display: block; }
+
+#menu .col { padding: 0; max-width: none; flex: none; }
+
+#menu a {
+    display: block;
+    padding: 9px 13px;
+    line-height: 1.35;
+    font-weight: 500;
+    white-space: nowrap;
+    border-radius: var(--radius);
+    border-left: 3px solid transparent;
+    transition: background-color .12s ease, color .12s ease, border-color .12s ease;
+}
+#menu a:link, #menu a:visited { color: var(--ink-soft); text-decoration: none; }
+#menu a:hover, #menu a:active, #menu a:focus {
+    color: var(--brand);
+    background: var(--brand-pale);
+    border-left-color: var(--brand-line);
+    text-decoration: none;
+}
+
+/* Upstream's :hover put a border and a side margin on the element itself
+   rather than on its ::after, so every hover nudged the menu down and in.
+   Separation is spacing now. */
+.btm-bordered:after { content: none; display: none; }
+.btm-bordered:hover { background: none; border: 0; margin: 0; }
+
+/* The small qualifier under a menu label. */
+#menu .bidas-note {
+    display: block;
+    margin-top: 1px;
+    font-size: 11.5px;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: .01em;
+    color: var(--ink-faint);
+}
+#menu a:hover .bidas-note { color: var(--brand-bright); }
+#menu .bidas-primary a .bidas-note,
+#menu .bidas-primary a:hover .bidas-note { color: rgba(255, 255, 255, .78); }
+#menu a.bidas-current .bidas-note { color: var(--brand-bright); }
+
+#menu a.bidas-current {
+    color: var(--brand);
+    background: var(--brand-pale);
+    border-left-color: var(--brand);
+    font-weight: 600;
+}
+
+/* ── sidebar: the "access data" panel, built by bidas-integration.js ────── */
+
+#menu .bidas-access {
+    margin-top: 24px;
+    padding: 10px 8px 8px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+#menu .bidas-access-heading .col {
+    padding: 2px 13px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+#menu .bidas-primary a {
+    color: #fff;
+    background: var(--brand);
+    border-left-color: var(--brand);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+#menu .bidas-primary a:hover {
+    color: #fff;
+    background: var(--brand-bright);
+    border-left-color: var(--brand-bright);
+}
+
+#menu .bidas-ext:after {
+    content: " \2197";
+    font-size: .78em;
+    vertical-align: super;
+    opacity: .8;
+}
+
+/* ── content ────────────────────────────────────────────────────────────── */
+/* Fills every pixel of the space left by the sidebar. Nothing inside is
+   given a narrower max-width - that was what made the page look half empty. */
+
+#contents,
+#contents.col-sm-10 {
+    flex: 1 1 0%;
+    min-width: 0;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    display: block;
+    padding: 26px 32px 34px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+#contents > h2:first-of-type { margin-top: 0; }
+
+#contents h2 {
+    margin: 2rem 0 .85rem;
+    padding-bottom: .4rem;
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -.015em;
+    border-bottom: 1px solid var(--line);
+}
+
+#contents h4 {
+    margin: 1.7rem 0 .55rem;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--brand);
+}
+
+#contents h5 { font-size: 15px; font-weight: 600; }
+
+#contents p { margin: 0 0 1rem; }
+#contents ul, #contents ol { margin: 0 0 1rem; padding-left: 1.35rem; }
+#contents li { margin-bottom: .3rem; }
+
+#contents hr { margin: 2rem 0; border: 0; border-top: 1px solid var(--line); }
+
+#contents blockquote {
+    margin: 0 0 1rem;
+    padding: .8rem 1.1rem;
+    background: var(--surface-sunk);
+    border-left: 3px solid var(--brand-line);
+    border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+#contents dt { font-weight: 600; margin-top: 1rem; }
+#contents dd { margin: .2rem 0 0; color: var(--ink-soft); }
+
+.main_texts { font-size: 16px; }
+.demo_link { font-weight: 500; }
+
+#contents img { border-radius: var(--radius); margin: .4rem 0 1rem; }
+
+/* ── code ───────────────────────────────────────────────────────────────── */
+
+#contents code, #contents kbd {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+                 "Liberation Mono", monospace;
+    font-size: .875em;
+}
+
+#contents code {
+    color: #9a3d7a;
+    background: var(--brand-pale);
+    padding: .12em .38em;
+    border-radius: 4px;
+}
+
+#contents kbd {
+    color: var(--ink);
+    background: var(--surface-sunk);
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    padding: .1em .4em;
+    border-radius: 4px;
+}
+
+#contents pre {
+    margin: 0 0 1.1rem;
+    padding: 13px 16px;
+    background: var(--surface-sunk);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    font-size: 13.5px;
+    line-height: 1.6;
+    overflow-x: auto;
+}
+#contents pre code {
+    color: var(--ink);
+    background: none;
+    padding: 0;
+    font-size: inherit;
+}
+
+/* ── tables ─────────────────────────────────────────────────────────────── */
+
+#contents .table {
+    margin-bottom: 1.3rem;
+    font-size: 15px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+}
+#contents .table thead th {
+    background: var(--surface-sunk);
+    border-top: 0;
+    border-bottom: 1px solid var(--line);
+    padding: .55rem .8rem;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+#contents .table td {
+    border-top: 1px solid var(--line);
+    padding: .55rem .8rem;
+    vertical-align: middle;
+}
+#contents .table tbody tr:first-child td { border-top: 0; }
+
+/* ── components used by the guides ──────────────────────────────────────── */
+
+.method-card {
+    border: 1px solid var(--line) !important;
+    border-radius: var(--radius) !important;
+    background: var(--surface-sunk);
+    padding: 14px 17px !important;
+    height: 100%;
+}
+.method-card h5 { margin-bottom: .35rem; color: var(--brand); }
+.method-card p { margin-bottom: .2rem; word-break: break-all; }
+
+#contents .alert {
+    border: 1px solid transparent;
+    border-left-width: 4px;
+    border-radius: var(--radius);
+    padding: .8rem 1.05rem;
+    font-size: 15px;
+}
+#contents .alert p:last-child { margin-bottom: 0; }
+#contents .alert-info      { background: var(--brand-pale);   border-color: var(--brand-line); border-left-color: var(--brand-bright); color: var(--ink); }
+#contents .alert-success   { background: #eaf6f0;             border-color: #bfe3d1;           border-left-color: var(--ok);          color: var(--ink); }
+#contents .alert-warning   { background: #fdf5e3;             border-color: #f0dcae;           border-left-color: var(--warn);        color: var(--ink); }
+#contents .alert-danger    { background: #fdedec;             border-color: #f2c6c3;           border-left-color: var(--danger);      color: var(--ink); }
+#contents .alert-secondary { background: var(--surface-sunk); border-color: var(--line);       border-left-color: var(--ink-faint);   color: var(--ink); }
+
+#contents .badge {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .03em;
+    padding: .34em .6em;
+    border-radius: 4px;
+    vertical-align: baseline;
+}
+#contents .badge-success   { background: var(--ok); }
+#contents .badge-secondary { background: var(--ink-faint); }
+#contents .badge-warning   { background: var(--warn); color: #fff; }
+
+.text-muted { color: var(--ink-faint) !important; }
+.layout-table code { white-space: nowrap; }
+
+/* ── footer ─────────────────────────────────────────────────────────────── */
+
+.footer-row {
+    background: transparent;
+    height: auto;
+    margin: 0;
+    border-top: 1px solid var(--line);
+}
+
+.footer_col { text-align: right; padding: 16px 24px 22px; }
+
+.footer_text { font-size: 13px; line-height: 1.4; }
+
+.footer_text_box {
+    height: 100%;
+    vertical-align: middle;
+    display: inline-block;
+    margin: 0 12px 0 0;
+    color: var(--ink-faint);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.banner_box {
+    height: 30px;
+    vertical-align: middle;
+    display: inline-block;
+    margin: 0;
+}
+.banner_box img {
+    background: #fff;
+    border-radius: 3px;
+    padding: 2px 4px;
+    margin-left: 10px;
+    opacity: .85;
+}
+.banner_box img:hover { opacity: 1; }
+
+/* ── responsive ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 991px) {
+    #menu, #menu.col-sm-2 { flex-basis: 200px; width: 200px; max-width: 200px; }
+    .body-margin { gap: 18px; padding: 0 16px; }
+    #contents, #contents.col-sm-10 { padding: 22px 20px 28px; }
+}
+
+@media (max-width: 767px) {
+    .body-margin { display: block; margin: 16px auto; padding: 0 12px; }
+
+    #menu, #menu.col-sm-2 {
+        width: auto;
+        max-width: none;
+        margin: 0 0 16px;
+        padding: 8px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+    }
+    #menu .bidas-access { margin-top: 10px; box-shadow: none; }
+
+    #contents, #contents.col-sm-10 { padding: 18px 15px 24px; }
+    #contents h2 { font-size: 21px; }
+
+    .header_text { font-size: 16px; padding: 11px 14px; }
+    .logo_box { height: 44px; width: 44px; }
+    .footer_col { text-align: left; padding: 14px; }
+}

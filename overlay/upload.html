@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>SMRI NGS Repository — How to Upload</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/bidas_style.css">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row header-row">
+            <div class="col-md-12 header_text font-weight-bold">
+                <div class="logo_box">
+                    <a href="index.html"><img src="images/smri_logo.png" align="left" height="100%" width="auto"></a>
+                </div>
+                <div class="header_text_box">
+                    Stanley Medical Research Institute<br>NGS Data Repository
+                </div>
+            </div>
+        </div>
+        <div class="row body-margin">
+            <div class="col-sm-2 menu_texts" id="menu">
+                <div class="row"><div class="col btm-bordered"><a href="index.html">Home</a></div></div>
+                <div class="row"><div class="col btm-bordered"><a href="data.html">NGS Data</a></div></div>
+                <div class="row"><div class="col btm-bordered"><a href="demo.html">Demographic Data</a></div></div>
+                <div class="row"><div class="col btm-bordered"><a href="manual.html">How to Download</a></div></div>
+                <div class="row"><div class="col btm-bordered"><a href="upload.html">How to Upload</a></div></div>
+                <div class="row"><div class="col btm-bordered"><a href="about.html">About this Site</a></div></div>
+            </div>
+
+            <div class="col-sm-10" id="contents">
+                <h2>How to Upload</h2>
+                <p class="text-muted">For data contributors depositing sequencing runs into the
+                    repository. Just fetching data? See <a href="manual.html">How to Download</a>.</p>
+
+                <div class="alert alert-info">
+                    <strong>Uploading requires the repository's administrator credentials.</strong>
+                    If you are depositing data you will already have been given them; if not, contact
+                    KAIST-BISL. Read-only accounts cannot write &mdash; they fail with
+                    <code>AccessDenied</code> the moment they try.
+                </div>
+
+                <div class="alert alert-warning">
+                    <strong>This account can do everything.</strong> It can delete any object in any
+                    bucket, and there is no undo. Read
+                    <a href="#overwriting">Overwriting and deleting</a> before you run anything with
+                    <code>--remove</code> or <code>rm</code> in it, and do not paste the password
+                    into a script &mdash; mint an
+                    <a href="#accesskeys">access key</a> for that instead.
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col-md-6 mb-3">
+                        <div class="method-card">
+                            <h5>Endpoint (S3 API)</h5>
+                            <p class="mb-1"><code class="js-s3-endpoint">&mdash;</code></p>
+                            <small class="text-muted">Path-style addressing. Same address as this
+                                website.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="method-card">
+                            <h5>Repository</h5>
+                            <p class="mb-1"><a class="js-console-link" href="/minio/" target="_blank" rel="noopener">Sign In to Repository</a></p>
+                            <small class="text-muted">Browser upload, bucket creation, access keys.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <h2>Which method to use</h2>
+                <table class="table table-sm">
+                    <thead><tr><th>Situation</th><th>Use</th></tr></thead>
+                    <tbody>
+                        <tr><td>A handful of small files, one time</td><td>The console, in your browser</td></tr>
+                        <tr><td>A sequencing run, a cohort, anything over a few GB</td><td><code>mc mirror</code></td></tr>
+                        <tr><td>From a pipeline or a scheduled job</td><td><code>mc</code> or <code>boto3</code> with a dedicated access key</td></tr>
+                    </tbody>
+                </table>
+                <div class="alert alert-warning">
+                    <strong>Do not use the browser for large uploads.</strong> A dropped connection
+                    restarts the whole transfer, and browsers handle multi-hour uploads of
+                    multi-gigabyte files badly. Use <code>mc mirror</code>, which resumes.
+                </div>
+
+                <h2>1. In your web browser</h2>
+                <p>Open the <a class="js-console-link" href="/minio/" target="_blank" rel="noopener">MinIO console</a>
+                    and sign in with the administrator account.</p>
+                <ol>
+                    <li>Pick a bucket, or press <em>Create Bucket</em>.</li>
+                    <li>Navigate into the prefix you want, or press
+                        <em>Create new path</em> to make one.</li>
+                    <li>Press <em>Upload</em> and choose files, or drag them onto the file list.
+                        <em>Upload Folder</em> keeps the directory structure.</li>
+                </ol>
+                <p>Progress shows in the bottom-right. Leave the tab open until it finishes.</p>
+
+                <h2>2. <code>mc</code> — for anything substantial</h2>
+
+                <h4>Install</h4>
+<pre><code># Linux
+curl -O https://dl.min.io/client/mc/release/linux-amd64/mc
+chmod +x mc &amp;&amp; sudo mv mc /usr/local/bin/
+
+# macOS
+brew install minio/stable/mc</code></pre>
+
+                <h4>Register this repository</h4>
+<pre><code class="js-mc-alias">&mdash;</code></pre>
+
+                <h4>Upload</h4>
+<pre><code class="js-mc-upload">&mdash;</code></pre>
+
+                <div class="alert alert-success">
+                    <strong>Use <code>mc mirror</code>, not <code>mc cp</code>, for bulk transfers.</strong>
+                    It compares both sides first and only sends what is missing or changed, so an
+                    interrupted transfer costs you nothing &mdash; just run the same command again.
+                </div>
+
+                <h4>Watch it go</h4>
+<pre><code class="js-mc-watch">&mdash;</code></pre>
+
+                <h4>Check it arrived</h4>
+<pre><code class="js-mc-verify">&mdash;</code></pre>
+                <p><small class="text-muted"><code>mc</code> verifies each part's checksum during
+                    transfer, so a successful <code>mirror</code> already means the bytes match. The
+                    ETag of a multipart upload is <em>not</em> a plain MD5, so do not compare it
+                    against <code>md5sum</code> output.</small></p>
+
+                <h2>3. Python (<code>boto3</code>)</h2>
+                <p>For pipelines. <code>upload_file</code> does multipart and retries on its own.</p>
+<pre><code class="js-boto3-upload">&mdash;</code></pre>
+
+                <hr>
+
+                <h2>How to organise what you upload</h2>
+                <p>The repository follows one bucket per collection, one prefix per assay and brain
+                    region:</p>
+                <table class="table table-sm layout-table">
+                    <thead><tr><th>Level</th><th>Example</th></tr></thead>
+                    <tbody>
+                        <tr><td>Bucket &mdash; the collection</td><td><code>neuropathology-consortium</code></td></tr>
+                        <tr><td>Prefix &mdash; assay</td><td><code>rna-seq/</code></td></tr>
+                        <tr><td>Prefix &mdash; brain region</td><td><code>rna-seq/hippocampus/</code></td></tr>
+                        <tr><td>Objects</td><td><code>rna-seq/hippocampus/S042_R1.fastq.gz</code></td></tr>
+                    </tbody>
+                </table>
+                <p>A few things worth getting right the first time, because renaming objects in S3
+                    means copying them again:</p>
+                <ul>
+                    <li>Lower case, hyphens rather than spaces or underscores in bucket and prefix
+                        names. Bucket names must be 3&ndash;63 characters, and may not contain
+                        underscores or upper case at all.</li>
+                    <li>Keep the sample identifier at the start of the file name, so a plain
+                        alphabetical listing groups a sample's files together.</li>
+                    <li>Upload a <code>MANIFEST</code> next to the data &mdash; sample ID, file name,
+                        size, checksum, read length, library prep. Nothing else records it.</li>
+                    <li>Do not create a placeholder object just to make a folder appear. S3 has no
+                        directories; a prefix exists exactly as long as an object uses it.</li>
+                </ul>
+
+                <h2 id="overwriting">Overwriting and deleting</h2>
+                <p>This account can overwrite and delete anything, and there is no undo &mdash;
+                    versioning is off. <code>mc mirror</code> without flags never deletes, which is
+                    the safe default. Two flags change that, so know what they do before typing
+                    them:</p>
+<pre><code class="js-mc-danger">&mdash;</code></pre>
+                <p>Enable versioning on a bucket if you want deletions to be recoverable &mdash;
+                    in the console under the bucket's settings, or
+                    <code>mc version enable bidas/&lt;bucket&gt;</code>. Do it before the first
+                    upload; it does not apply retroactively.</p>
+
+                <h2 id="accesskeys">Access keys for pipelines</h2>
+                <p>Never put the administrator password in a script or a job definition. Mint a
+                    separate key pair instead, in the console under <em>Access Keys</em> &rarr;
+                    <em>Create access key</em>, or:</p>
+<pre><code class="js-mc-accesskey">&mdash;</code></pre>
+                <p>The key can be revoked on its own without touching the account, and shows up
+                    separately in the audit trail.</p>
+                <p>By default it inherits the account's rights &mdash; for the administrator, that is
+                    everything. Narrow it so a stray job cannot delete another cohort or manage
+                    users. <code>--policy</code> takes the <em>path to a JSON file</em>, not a policy
+                    name:</p>
+<pre><code class="js-scoped-policy">&mdash;</code></pre>
+<pre><code class="js-scoped-key">&mdash;</code></pre>
+                <p>The result is a key that can read and write that one bucket and nothing else.</p>
+
+                <h2>Troubleshooting</h2>
+                <dl>
+                    <dt><code>AccessDenied</code> on upload, but downloads work</dt>
+                    <dd>You are signed in with a read-only account. Uploading needs the administrator
+                        account, or a key scoped to the <code>bidas-upload</code> policy.</dd>
+
+                    <dt><code>SignatureDoesNotMatch</code></dt>
+                    <dd>Nearly always a clock problem &mdash; S3 signatures expire. Check your machine's
+                        time (<code>timedatectl</code>, or turn on NTP). Otherwise the secret key is
+                        mistyped.</dd>
+
+                    <dt>Transfer dies part-way through a large file</dt>
+                    <dd>Re-run the same <code>mc mirror</code> command. It picks up what is missing.
+                        If it dies repeatedly at the same point, lower the concurrency:
+                        <code>mc mirror --limit-upload 100MiB …</code>.</dd>
+
+                    <dt>Interrupted uploads taking up space</dt>
+                    <dd>Abandoned multipart uploads linger. List them with
+                        <code>mc ls --incomplete bidas/&lt;bucket&gt;/</code> and clear them with
+                        <code>mc rm --incomplete --recursive --force bidas/&lt;bucket&gt;/</code>.</dd>
+
+                    <dt><code>InvalidBucketName</code></dt>
+                    <dd>No upper case, no underscores, 3&ndash;63 characters.</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="row footer-row">
+            <div class="footer_col col-md-12 footer_text">
+                <div class="footer_text_box">Powered by</div>
+                <div class="banner_box">
+                    <a href="http://stanleyresearch.org" target="_blank"><img src="images/smri_banner.png"
+                            style="background-color:white;" align="left" height="100%" width="auto"></a>
+                    <a href="http://biosoft.kaist.ac.kr" target="_blank"><img src="images/bisl_banner.png"
+                            style="background-color:white;" align="left" height="100%" width="auto"></a>
+                    <a href="http://www.kaist.ac.kr" target="_blank"><img src="images/kaist_banner.jpg" align="left"
+                            height="100%" width="auto"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/bidas-manual.js"></script>
+</body>
+
+</html>

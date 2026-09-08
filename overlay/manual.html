@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>SMRI NGS Repository — How to Download</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/bidas_style.css">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row header-row">
+            <div class="col-md-12 header_text font-weight-bold">
+                <div class="logo_box">
+                    <a href="index.html"><img src="images/smri_logo.png" align="left" height="100%" width="auto"></a>
+                </div>
+                <div class="header_text_box">
+                    Stanley Medical Research Institute<br>NGS Data Repository
+                </div>
+            </div>
+        </div>
+        <div class="row body-margin">
+            <div class="col-sm-2 menu_texts" id="menu">
+                <div class="row"><div class="col btm-bordered"><a href="index.html">Home</a></div></div>
+                <div class="row"><div class="col btm-bordered"><a href="data.html">NGS Data</a></div></div>
+                <div class="row"><div class="col btm-bordered"><a href="demo.html">Demographic Data</a></div></div>
+                <div class="row"><div class="col btm-bordered"><a href="manual.html">How to Download</a></div></div>
+                <div class="row"><div class="col btm-bordered"><a href="upload.html">How to Upload</a></div></div>
+                <div class="row"><div class="col btm-bordered"><a href="about.html">About this Site</a></div></div>
+            </div>
+
+            <div class="col-sm-10" id="contents">
+                <h2>How to Download</h2>
+                <p class="text-muted">For researchers who have been granted access to the repository.
+                    Depositing data instead? See <a href="upload.html">How to Upload</a>.</p>
+
+                <p>The repository stores its data in <a href="https://min.io" target="_blank" rel="noopener">MinIO</a>,
+                    an S3-compatible object store. Sign in to the
+                    <a class="js-console-link" href="/minio/" target="_blank" rel="noopener">MinIO console</a>
+                    to browse and download in your web browser, or point any S3 client at it &mdash;
+                    the MinIO client <code>mc</code>, the AWS CLI, <code>boto3</code>, Cyberduck, rclone.</p>
+
+                <div class="alert alert-warning">
+                    <strong>All data in this repository is private.</strong> Every bucket requires
+                    credentials; there are no public download links. Only this website itself is open.
+                </div>
+
+                <h4>What you need</h4>
+                <ul>
+                    <li>The <strong>username and password</strong> issued to you by KAIST-BISL.
+                        The same pair works for the console login and for every command-line client
+                        below, where it is called an <strong>access key</strong> and
+                        <strong>secret key</strong>.</li>
+                    <li>Download accounts are issued per request &mdash; contact KAIST-BISL. Such an
+                        account can list and fetch anything in the repository, but cannot upload,
+                        overwrite or delete. Depositing data is a different account; see
+                        <a href="upload.html">How to Upload</a>.</li>
+                    <li>Enough disk space. Whole-cohort RNA-Seq runs are large; check sizes in the
+                        console before you start.</li>
+                </ul>
+
+                <div class="row mb-2">
+                    <div class="col-md-6 mb-3">
+                        <div class="method-card">
+                            <h5>Endpoint (S3 API)</h5>
+                            <p class="mb-1"><code class="js-s3-endpoint">&mdash;</code></p>
+                            <small class="text-muted">Path-style addressing. Use this for
+                                <code>mc</code>, AWS CLI, <code>boto3</code>, rclone.
+                                It is the same address as this website: signed S3 requests are
+                                recognised and routed to the storage, everything else gets the site.
+                                If a client dislikes that, <code class="js-s3-endpoint-alt">&mdash;</code>
+                                serves the S3 API on its own.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="method-card">
+                            <h5>Region</h5>
+                            <p class="mb-1"><code class="js-region">&mdash;</code></p>
+                            <small class="text-muted">Some clients insist on one. MinIO ignores it,
+                                but the signature does not.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <h4>Buckets</h4>
+                <table class="table table-sm">
+                    <thead><tr><th>Bucket</th><th>Access</th></tr></thead>
+                    <tbody class="js-bucket-rows">
+                        <tr><td colspan="2" class="text-muted">Loading&hellip;</td></tr>
+                    </tbody>
+                </table>
+
+                <hr>
+
+                <h2>1. In your web browser</h2>
+                <p>The simplest option, and nothing to install. Open the
+                    <a class="js-console-link" href="/minio/" target="_blank" rel="noopener">repository</a>
+                    &mdash; <b>Sign In to Repository</b> in the menu on the left &mdash; and sign in
+                    with your username and password. You get a proper file browser: buckets down the
+                    side, folders and objects in the middle, click a file to download it. Text files and
+                    PDFs preview in place, several objects can be downloaded together, and
+                    <em>Access Keys</em> is where you mint the key pairs the tools below want.</p>
+
+                <h4>Sharing a file with a colleague</h4>
+                <p>Open an object in the console and choose <em>Share</em>. The link it gives you carries
+                    its own signature and expires on a deadline you pick, so the recipient needs no
+                    account. The same thing from the command line:</p>
+                <pre><code class="js-share">&mdash;</code></pre>
+
+                <h2>2. <code>mc</code> — the MinIO client</h2>
+                <p>The best tool for bulk transfers: it resumes, mirrors and parallelises.
+                    Download a single static binary from
+                    <a href="https://min.io/docs/minio/linux/reference/minio-mc.html" target="_blank" rel="noopener">min.io</a>.</p>
+
+                <h4>Install</h4>
+<pre><code># Linux
+curl -O https://dl.min.io/client/mc/release/linux-amd64/mc
+chmod +x mc &amp;&amp; sudo mv mc /usr/local/bin/
+
+# macOS
+brew install minio/stable/mc
+
+# Windows (PowerShell)
+Invoke-WebRequest -Uri https://dl.min.io/client/mc/release/windows-amd64/mc.exe -OutFile mc.exe</code></pre>
+
+                <h4>Register this repository</h4>
+<pre><code class="js-mc-alias">&mdash;</code></pre>
+                <p><small class="text-muted">The alias <code>bidas</code> is stored in
+                    <code>~/.mc/config.json</code>. Do this once.</small></p>
+
+                <h4>Browse</h4>
+<pre><code>mc ls bidas                                    # buckets you can see
+mc ls bidas/neuropathology-consortium          # top level of one bucket
+mc ls --recursive bidas/neuropathology-consortium/rna-seq/hippocampus/
+mc du bidas/array-collection                   # how big is it</code></pre>
+
+                <h4>Download</h4>
+<pre><code># one file
+mc cp bidas/public/examples/Cytokine.tsv .
+
+# a whole prefix, in parallel
+mc cp --recursive bidas/neuropathology-consortium/rna-seq/hippocampus/ ./hippocampus/
+
+# keep a local copy in sync - re-run it after an interrupted transfer,
+# only what is missing or changed is fetched
+mc mirror bidas/array-collection/rna-seq/ ./array-collection/</code></pre>
+                <p><small class="text-muted"><code>mc mirror</code> is the one to use for large
+                    transfers: it is restartable, so a dropped connection costs you nothing.</small></p>
+
+                <h4>Verify</h4>
+<pre><code>mc stat bidas/public/examples/Cytokine.tsv      # size, etag, content type
+mc cat bidas/public/README.md</code></pre>
+
+                <h4>Share a time-limited link</h4>
+<pre><code>mc share download --expire 168h bidas/neuropathology-consortium/rna-seq/hippocampus/sample.bam</code></pre>
+
+                <h2>3. AWS CLI</h2>
+<pre><code>aws configure --profile bidas
+#   AWS Access Key ID     : your access key
+#   AWS Secret Access Key : your secret key
+#   Default region name   : <span class="js-region-plain">us-east-1</span>
+#   Default output format : json</code></pre>
+<pre><code class="js-aws-cli">&mdash;</code></pre>
+                <p><small class="text-muted">The endpoint has to be given on every call; alternatively
+                    put <code>endpoint_url</code> under <code>[profile bidas]</code> in
+                    <code>~/.aws/config</code>.</small></p>
+
+                <h2>4. Python (<code>boto3</code>)</h2>
+<pre><code class="js-boto3">&mdash;</code></pre>
+
+
+                <hr>
+
+                <h2>Troubleshooting</h2>
+                <dl>
+                    <dt><code>SignatureDoesNotMatch</code></dt>
+                    <dd>Almost always a clock problem &mdash; S3 signatures expire. Check that your
+                        machine&rsquo;s time is correct (<code>timedatectl</code>, or enable NTP).
+                        Failing that, the secret key was mistyped.</dd>
+
+                    <dt><code>AccessDenied</code></dt>
+                    <dd>Your key is valid but has no rights to that bucket. The read-only account can
+                        list and download; it cannot write. Contact KAIST-BISL if you need more.</dd>
+
+                    <dt><code>NoSuchBucket</code> / empty listing</dt>
+                    <dd>Check the bucket name against the table above, and make sure your client uses
+                        <em>path-style</em> addressing. <code>mc</code> and the AWS CLI do this
+                        automatically against a custom endpoint; some SDKs need
+                        <code>force_path_style=True</code>.</dd>
+
+                    <dt>Transfer keeps dying on a large file</dt>
+                    <dd>Use <code>mc mirror</code> instead of <code>mc cp</code> and just re-run it.</dd>
+                </dl>
+
+                <h2>Depositing data?</h2>
+                <p>Uploading needs different rights, and bulk transfer has its own pitfalls. That is
+                    covered separately in <a href="upload.html">How to Upload</a>.</p>
+            </div>
+        </div>
+
+        <div class="row footer-row">
+            <div class="footer_col col-md-12 footer_text">
+                <div class="footer_text_box">Powered by</div>
+                <div class="banner_box">
+                    <a href="http://stanleyresearch.org" target="_blank"><img src="images/smri_banner.png"
+                            style="background-color:white;" align="left" height="100%" width="auto"></a>
+                    <a href="http://biosoft.kaist.ac.kr" target="_blank"><img src="images/bisl_banner.png"
+                            style="background-color:white;" align="left" height="100%" width="auto"></a>
+                    <a href="http://www.kaist.ac.kr" target="_blank"><img src="images/kaist_banner.jpg" align="left"
+                            height="100%" width="auto"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/bidas-manual.js"></script>
+</body>
+
+</html>
